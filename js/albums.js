@@ -238,14 +238,16 @@ async function searchAndDisplaySpotifyAlbum(urlOrId) {
           bpm: Math.round(af.tempo),
           camelot: convertSpotifyKeyToCamelot(af.key, af.mode),
           key: convertSpotifyKeyToName(af.key, af.mode),
-          genre: inferGenreFromTrack(item.title, item.artist)
+          genre: inferGenreFromTrack(item.title, item.artist),
+          source: 'reccobeats'
         };
       } else if (existing && existing.bpm) {
         meta = {
           bpm: existing.bpm,
           camelot: existing.camelot,
           key: existing.key || "Desconocido",
-          genre: existing.genre || inferGenreFromTrack(item.title, item.artist)
+          genre: existing.genre || inferGenreFromTrack(item.title, item.artist),
+          source: 'manual'
         };
       } else {
         meta = await fetchRealTrackMetadata(item.title, item.artist);
@@ -257,7 +259,8 @@ async function searchAndDisplaySpotifyAlbum(urlOrId) {
         bpm: meta.bpm,
         camelot: meta.camelot,
         key: meta.key,
-        genre: meta.genre
+        genre: meta.genre,
+        source: meta.source
       };
 
       const resSlot = findOptimalSlot(trackObj);
@@ -383,7 +386,7 @@ async function searchAndDisplaySpotifyPlaylist(urlOrId) {
     for (let i = 0; i < rawTracks.length; i++) {
       const item = rawTracks[i];
       const meta = await fetchRealTrackMetadata(item.title, item.artist);
-      const trackObj = { title: item.title, artist: item.artist, bpm: meta.bpm, camelot: meta.camelot, key: meta.key, genre: meta.genre };
+      const trackObj = { title: item.title, artist: item.artist, bpm: meta.bpm, camelot: meta.camelot, key: meta.key, genre: meta.genre, source: meta.source };
       const resSlot = findOptimalSlot(trackObj);
       const dupCheck = checkIsDuplicate(item.title);
 
@@ -484,13 +487,14 @@ async function searchAndDisplayAppleMusicAlbum(urlOrId) {
           bpm: existing.bpm,
           camelot: existing.camelot,
           key: existing.key || "Desconocido",
-          genre: existing.genre || inferGenreFromTrack(item.title, item.artist)
+          genre: existing.genre || inferGenreFromTrack(item.title, item.artist),
+          source: 'manual'
         };
       } else {
         meta = await fetchRealTrackMetadata(item.title, item.artist);
       }
 
-      const trackObj = { title: item.title, artist: item.artist, bpm: meta.bpm, camelot: meta.camelot, key: meta.key, genre: meta.genre };
+      const trackObj = { title: item.title, artist: item.artist, bpm: meta.bpm, camelot: meta.camelot, key: meta.key, genre: meta.genre, source: meta.source };
       const resSlot = findOptimalSlot(trackObj);
       const dupCheck = checkIsDuplicate(item.title);
 
@@ -542,7 +546,7 @@ window.addAllAlbumTracksToPlaylist = async function(jsonStr) {
       const existing = INITIAL_PLAYLIST.find(s => normalizeSongTitle(s.title) === normT) || EDM_CANDIDATES_POOL.find(s => normalizeSongTitle(s.title) === normT);
       let meta;
       if (existing && existing.bpm) {
-        meta = { bpm: existing.bpm, camelot: existing.camelot, key: existing.key || "Desconocido", genre: existing.genre || inferGenreFromTrack(item.title, item.artist) };
+        meta = { bpm: existing.bpm, camelot: existing.camelot, key: existing.key || "Desconocido", genre: existing.genre || inferGenreFromTrack(item.title, item.artist), source: 'manual' };
       } else {
         meta = await fetchRealTrackMetadata(item.title, item.artist);
       }
@@ -554,6 +558,7 @@ window.addAllAlbumTracksToPlaylist = async function(jsonStr) {
         key: meta.key,
         camelot: meta.camelot,
         genre: meta.genre,
+        source: meta.source,
         isNew: true
       });
     }
@@ -657,14 +662,16 @@ window.importSpotifyAlbumById = async function(albumIdOrUrl) {
           bpm: Math.round(af.tempo),
           camelot: convertSpotifyKeyToCamelot(af.key, af.mode),
           key: convertSpotifyKeyToName(af.key, af.mode),
-          genre: inferGenreFromTrack(item.title, item.artist)
+          genre: inferGenreFromTrack(item.title, item.artist),
+          source: 'reccobeats'
         };
       } else if (existing && existing.bpm) {
         meta = {
           bpm: existing.bpm,
           camelot: existing.camelot,
           key: existing.key || "Desconocido",
-          genre: existing.genre || inferGenreFromTrack(item.title, item.artist)
+          genre: existing.genre || inferGenreFromTrack(item.title, item.artist),
+          source: 'manual'
         };
       } else {
         meta = await fetchRealTrackMetadata(item.title, item.artist);
@@ -677,7 +684,8 @@ window.importSpotifyAlbumById = async function(albumIdOrUrl) {
         bpm: meta.bpm,
         key: meta.key,
         camelot: meta.camelot,
-        genre: meta.genre
+        genre: meta.genre,
+        source: meta.source
       });
     }
 
@@ -821,14 +829,16 @@ window.importSpotifyPlaylistById = async function(playlistIdOrUrl) {
           bpm: Math.round(af.tempo),
           camelot: convertSpotifyKeyToCamelot(af.key, af.mode),
           key: convertSpotifyKeyToName(af.key, af.mode),
-          genre: inferGenreFromTrack(item.title, item.artist)
+          genre: inferGenreFromTrack(item.title, item.artist),
+          source: 'reccobeats'
         };
       } else if (existing && existing.bpm) {
         meta = {
           bpm: existing.bpm,
           camelot: existing.camelot,
           key: existing.key || "Desconocido",
-          genre: existing.genre || inferGenreFromTrack(item.title, item.artist)
+          genre: existing.genre || inferGenreFromTrack(item.title, item.artist),
+          source: 'manual'
         };
       } else {
         meta = await fetchRealTrackMetadata(item.title, item.artist);
@@ -841,7 +851,8 @@ window.importSpotifyPlaylistById = async function(playlistIdOrUrl) {
         bpm: meta.bpm,
         key: meta.key,
         camelot: meta.camelot,
-        genre: meta.genre
+        genre: meta.genre,
+        source: meta.source
       });
     }
 
@@ -907,7 +918,8 @@ window.importAppleMusicAlbumById = async function(urlOrId) {
           bpm: existing.bpm,
           camelot: existing.camelot,
           key: existing.key || "Desconocido",
-          genre: existing.genre || inferGenreFromTrack(title, artist)
+          genre: existing.genre || inferGenreFromTrack(title, artist),
+          source: 'manual'
         };
       } else {
         meta = await fetchRealTrackMetadata(title, artist);
@@ -920,7 +932,8 @@ window.importAppleMusicAlbumById = async function(urlOrId) {
         bpm: meta.bpm,
         key: meta.key,
         camelot: meta.camelot,
-        genre: meta.genre
+        genre: meta.genre,
+        source: meta.source
       });
     }
 

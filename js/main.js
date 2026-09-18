@@ -73,7 +73,9 @@ async function generateSmartWaveRecommendations(forceNewBatch = false) {
         camelot: cand.camelot,
         key: cand.key || "Desconocido",
         genre: cand.genre || domGenre,
-        isExtended: cand.isExtended
+        isExtended: cand.isExtended,
+        // Los resultados de /api/search traen su source; los del pool no, y esos son valores escritos a mano.
+        source: cand.source || 'manual'
       };
 
       html += `
@@ -168,14 +170,11 @@ async function analyzeAlbumQuery(query) {
       const domGenre = getDominantPlaylistGenre();
       const isGenreMatch = genre.toLowerCase().includes(domGenre.toLowerCase()) || domGenre.toLowerCase().includes(genre.toLowerCase());
 
-      const trackObj = { title, artist, bpm, camelot, isExtended, durSec, genre };
+      const trackObj = { title, artist, bpm, camelot, isExtended, durSec, genre, source };
       const dupCheck = checkIsDuplicate(title);
       const resSlot = verified ? findOptimalSlot(trackObj) : null;
 
-      const sourceLabel = source === 'known_db' ? '📋 Base conocida'
-        : source === 'beatport' ? '🎧 Beatport (scraping en vivo)'
-        : source === 'spotify' ? '✅ Spotify audio-features'
-        : null;
+      const sourceLabel = getDataSourceLabel(source);
 
       html += `
         <div class="recommend-card ${dupCheck.isDuplicate ? 'card-duplicate' : ''}">
