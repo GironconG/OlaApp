@@ -1,0 +1,12 @@
+{
+  "name": "edm-automix-dashboard",
+  "version": "1.0.0",
+  "description": "EDM Automix Dynamic Energy Curve Dashboard",
+  "main": "index.html",
+  "scripts": {
+    "start": "node -e \"console.log('Deploy ready')\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

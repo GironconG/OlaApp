@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ola Pro — EDM Automix & Curva Inteligente</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-logo">🌊</div>
+      <div>
+        <div class="brand-title">Ola Pro — EDM Automix</div>
+        <div class="brand-subtitle">IA Recomendadora por Curva • Vercel Ready • Sincronización Automática</div>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-badge">
+        <div class="stat-val" id="statTotalSongs">38</div>
+        <div class="stat-lbl">Canciones</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-val" id="statBpmRange">120 - 132</div>
+        <div class="stat-lbl">BPM Rango</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-val" id="statHarmonicScore">94.2%</div>
+        <div class="stat-lbl">Armonía General</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-val" id="statDominantGenre" style="font-size: 12px; color: var(--accent-cyan); font-weight:700;">Progressive House</div>
+        <div class="stat-lbl">Género Principal</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid-container">
+    
+    <div>
+      <div class="card">
+        <div class="card-title">
+          <span class="icon">📈</span> Curva de Energía "Sube-Baja" (Automix Wave)
+        </div>
+        <div class="chart-box">
+          <canvas id="energyChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span class="icon">🤖</span> Recomendador Inteligente (Beatport Live Sync)
+        </div>
+
+        <button class="btn btn-magic" id="btnSmartWaveRecommend">
+          ✨ Recomendar Canciones para Mejorar la Curva ("Sube-Baja")
+        </button>
+
+        <div class="search-box-group">
+          <input type="text" id="albumInput" class="input-field" placeholder="Busca cualquier canción, artista o pega un enlace de Álbum de Spotify / Apple Music...">
+          <button class="btn" id="btnAnalyze">
+            <span>🔍 Buscar con Beatport</span>
+          </button>
+        </div>
+
+        <div id="topArtistsContainer" style="margin-top: 10px; margin-bottom: 14px; font-size: 11px;">
+          <div style="color: var(--text-muted); font-weight: 600; margin-bottom: 6px;">🔥 Artistas más usados en tu Set (Haz clic para buscar sus temas):</div>
+          <div id="topArtistsChips" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+        </div>
+
+        <div id="recommendResultsContainer">
+          <div style="text-align: center; color: var(--text-muted); padding: 20px 0;">
+            Haz clic arriba o busca una canción o álbum para realizar una consulta en vivo a Beatport y calcular su posición armónica exacta.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="padding: 18px;">
+        <div class="card-title" style="font-size: 15px; margin-bottom: 10px;">
+          <span class="icon">☁️</span> Sincronizar / Push Directo a tu Cuenta
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button class="btn btn-apple" style="font-size:12px; justify-content:center; padding:10px;" onclick="syncToAppleMusic()">
+            🍎 Apple Music (1-Click Vía TuneMyMusic)
+          </button>
+          <button class="btn btn-spotify" style="font-size:12px; justify-content:center; padding:10px;" onclick="openSpotifyTokenGuide()">
+            🟢 Push Directo a Spotify API (Pegar Token)
+          </button>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 18px;">
+        <div class="card-title" style="font-size: 15px; margin-bottom: 10px;">
+          <span class="icon">📥</span> Importar Playlist o Álbum (Spotify / Apple Music / Texto)
+        </div>
+        <textarea id="importTextarea" class="input-field" placeholder="Pega un enlace de Álbum o Playlist de Spotify (https://open.spotify.com/album/...) o Apple Music (https://music.apple.com/us/album/...) o lista de canciones ('Canción - Artista')..."></textarea>
+        <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap;">
+          <button class="btn btn-secondary" style="font-size: 12px; padding: 8px 14px; flex: 1;" id="btnImportPlaylist">
+            📥 Cargar (Link Spotify, Apple Music o Texto)
+          </button>
+          <button class="btn btn-spotify" style="font-size: 12px; padding: 8px 14px; flex: 1;" onclick="openSpotifyTokenGuide()">
+            🟢 Elegir de mi Cuenta Spotify
+          </button>
+        </div>
+        <div style="margin-top: 6px; text-align: right;">
+          <span class="save-indicator" id="saveIndicator">💾 Guardado Automático Activo</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <div><span class="icon">🎶</span> Playlist Activa</div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button class="btn btn-magic" style="font-size: 11px; padding: 6px 12px;" onclick="reorderPlaylistHarmonically()" title="Reordena automáticamente todas las canciones para evitar saltos bruscos de BPM o desajustes armónicos Camelot">
+              🪄 Auto-Reorganizar Armónicamente
+            </button>
+            <button class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px;" id="btnResetPlaylist">Restablecer 38 Originales</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 10px; padding: 6px 10px; background: rgba(0, 242, 254, 0.05); border-radius: 8px; border: 1px solid rgba(0, 242, 254, 0.15);">
+          <label style="font-size: 11px; color: var(--accent-cyan); font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="autoSortToggle" checked style="accent-color: var(--accent-cyan); cursor: pointer;">
+            ⚡ Reorganizar automáticamente al insertar nuevas canciones (Transiciones Suaves)
+          </label>
+        </div>
+
+        <div class="playlist-table-wrapper">
+          <table class="playlist-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Canción</th>
+                <th>BPM</th>
+                <th>Camelot</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="playlistTableBody">
+            </tbody>
+          </table>
+        </div>
+
+        <div class="action-row">
+          <button class="btn btn-secondary" style="flex:1;" id="btnCopyTuneMyMusic">📋 Copiar TuneMyMusic</button>
+          <button class="btn" style="flex:1;" id="btnExportCSV">📥 Exportar CSV</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL DE SPOTIFY TOKEN Y SELECCION DE PLAYLIST -->
+  <div class="token-guide-modal" id="spotifyTokenModal">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-title">
+        <span>🟢 Sincronización Inteligente con Spotify</span>
+        <button style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;" onclick="closeSpotifyTokenGuide()">✕</button>
+      </div>
+
+      <div id="spotifyUserInfoBar" style="display:none; background: rgba(29,185,84,0.15); border:1px solid rgba(29,185,84,0.4); border-radius:10px; padding:12px 16px; margin-bottom:14px; font-size:13px; color:#1db954; font-weight:700;">
+        🟢 Conectado con Spotify
+      </div>
+
+      <div class="modal-step">
+        <b style="color: var(--accent-cyan);">Paso 1: Autenticación con Spotify</b>
+        <div style="margin-top: 8px;">
+          <button class="btn btn-spotify" style="width: 100%; justify-content: center; padding: 12px; font-weight: 700;" onclick="loginWithSpotify()">
+            🔑 Iniciar Sesión con Spotify (1-Click OAuth)
+          </button>
+        </div>
+        <details style="margin-top: 10px; font-size: 11px; color: var(--text-muted);">
+          <summary style="cursor: pointer;">O ingresar Token de Spotify manualmente (BQD...)</summary>
+          <input type="text" id="spotifyTokenInput" class="input-field" placeholder="Pega tu Access Token manual (BQD...)..." style="margin-top: 8px; width: 100%; font-size: 12px;">
+        </details>
+      </div>
+
+      <div class="modal-step" id="spotifyPlaylistConfigStep">
+        <b style="color: var(--accent-green);">Paso 2: Elegir o Crear Playlist</b>
+        <div style="margin-top: 10px;">
+          <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">Selecciona la Playlist de Destino o Importación:</label>
+          <div style="display: flex; gap: 8px;">
+            <select id="spotifyPlaylistSelect" class="input-field" style="flex: 1; font-size: 13px; padding: 10px;" onchange="handlePlaylistSelectChange(this.value)">
+              <option value="CREATE_NEW">➕ Crear Nueva Playlist (Nombre personalizado)</option>
+            </select>
+            <button class="btn btn-secondary" style="font-size: 11px; padding: 0 12px; white-space: nowrap; color: var(--accent-cyan);" onclick="importSelectedSpotifyPlaylistToDashboard()" title="Carga la playlist seleccionada de tu Spotify en el dashboard para editarla">
+              📥 Importar a Dashboard
+            </button>
+          </div>
+        </div>
+
+        <div id="newPlaylistNameGroup" style="margin-top: 10px;">
+          <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">Nombre para la Nueva Playlist:</label>
+          <input type="text" id="newPlaylistNameInput" class="input-field" value="Playlist EDM Sube-Baja (Automix)" style="width: 100%; font-size: 13px;">
+        </div>
+      </div>
+
+      <div id="spotifySyncStatus" style="display:none; background: rgba(0, 242, 254, 0.1); border:1px solid var(--accent-cyan); border-radius:10px; padding:12px; font-size:12px; color:var(--accent-cyan); margin-bottom:14px; text-align:center;">
+        🔄 Procesando sincronización...
+      </div>
+
+      <div id="spotifyMissingTracksPanel" style="display:none; background: rgba(255, 0, 85, 0.08); border: 1px solid rgba(255, 0, 85, 0.4); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+        <div style="font-weight: 700; color: var(--accent-red); font-size: 13px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <span>⚠️ Canciones no encontradas en Spotify (<span id="missingTracksCount">0</span>)</span>
+          <button class="btn btn-secondary" style="font-size: 10px; padding: 4px 8px; color: var(--accent-red);" onclick="removeAllMissingTracks()">🗑️ Eliminar Todas</button>
+        </div>
+        <div id="missingTracksList" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 4px;"></div>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <button class="btn btn-spotify" style="width: 100%; justify-content: center; padding: 14px; font-weight: 800; font-size: 14px;" onclick="executeSpotifySync()">
+          🚀 Sincronizar Playlist (Sin Duplicados & Orden Armónico)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE BÚSQUEDA MANUAL DE ALTERNATIVAS EN SPOTIFY -->
+  <div class="token-guide-modal" id="manualSpotifySearchModal">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-title">
+        <span>🔍 Buscar Alternativa en Spotify</span>
+        <button style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;" onclick="closeManualSpotifySearchModal()">✕</button>
+      </div>
+
+      <div style="margin-bottom: 12px; font-size: 12px; color: var(--text-muted);" id="manualSearchTargetInfo">
+        Reemplazar canción...
+      </div>
+
+      <div class="search-box-group" style="margin-bottom: 12px;">
+        <input type="text" id="manualSpotifyQueryInput" class="input-field" placeholder="Escribe el nombre o artista correcto...">
+        <button class="btn" onclick="performManualSpotifySearch()">🔍 Buscar</button>
+      </div>
+
+      <div id="manualSpotifySearchResults" style="max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></div>
+    </div>
+  </div>
+
+  <!-- MÓDULOS DE JAVASCRIPT SEPARADOS Y MODULARES -->
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/table.js"></script>
+  <script src="js/spotify.js"></script>
+  <script src="js/albums.js"></script>
+  <script src="js/main.js"></script>
+
+</body>
+</html>

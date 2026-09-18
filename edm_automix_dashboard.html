@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ola Pro — EDM Automix Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://js-cdn.music.apple.com/musickit/v3/musickit.js" async></script>
+  <style>
+    :root {
+      --bg-main: #07090e;
+      --bg-card: rgba(18, 24, 38, 0.75);
+      --bg-card-hover: rgba(26, 35, 56, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(0, 242, 254, 0.3);
+      --accent-cyan: #00f2fe;
+      --accent-blue: #4facfe;
+      --accent-green: #00ff87;
+      --accent-yellow: #ffb703;
+      --accent-red: #ff0055;
+      --accent-purple: #9d4edd;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-main);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(157, 78, 221, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(0, 255, 135, 0.03) 0%, transparent 60%);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 28px;
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 16px rgba(0, 242, 254, 0.4);
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #ffffff, var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 20px;
+    }
+
+    .stat-badge {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .stat-lbl {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      transition: border-color 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(0, 242, 254, 0.2);
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+    }
+
+    .card-title span.icon {
+      font-size: 20px;
+    }
+
+    .chart-box {
+      height: 260px;
+      width: 100%;
+      position: relative;
+    }
+
+    .search-box-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .input-field {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    textarea.input-field {
+      resize: vertical;
+      min-height: 80px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.2);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #000000;
+      font-weight: 700;
+      font-family: var(--font-heading);
+      border: none;
+      border-radius: 12px;
+      padding: 0 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(0, 242, 254, 0.3);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(0, 242, 254, 0.5);
+    }
+
+    .btn-magic {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(157, 78, 221, 0.4);
+      width: 100%;
+      justify-content: center;
+      padding: 12px;
+      margin-bottom: 18px;
+    }
+
+    .btn-magic:hover {
+      box-shadow: 0 6px 24px rgba(157, 78, 221, 0.7);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      box-shadow: none;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: none;
+    }
+
+    .btn-apple {
+      background: #fa243c;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(250, 36, 60, 0.3);
+    }
+    .btn-apple:hover {
+      background: #ff3b52;
+      box-shadow: 0 6px 24px rgba(250, 36, 60, 0.5);
+    }
+
+    .btn-spotify {
+      background: #1db954;
+      color: #000;
+      box-shadow: 0 4px 16px rgba(29, 185, 84, 0.3);
+    }
+    .btn-spotify:hover {
+      background: #1ed760;
+      box-shadow: 0 6px 24px rgba(29, 185, 84, 0.5);
+    }
+
+    .recommend-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .recommend-card {
+      background: rgba(10, 14, 23, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      transition: all 0.25s ease;
+    }
+
+    .recommend-card.card-duplicate {
+      background: rgba(255, 183, 3, 0.05);
+      border-color: rgba(255, 183, 3, 0.3);
+    }
+
+    .recommend-card.card-smart-ai {
+      background: rgba(157, 78, 221, 0.08);
+      border-color: rgba(157, 78, 221, 0.35);
+    }
+
+    .recommend-card:hover {
+      border-color: var(--accent-cyan);
+      background: rgba(15, 22, 38, 0.8);
+      transform: translateX(4px);
+    }
+
+    .track-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .track-name {
+      font-weight: 700;
+      font-size: 15px;
+      color: #ffffff;
+    }
+
+    .track-artist {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .track-meta {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .tag-bpm { color: var(--accent-cyan); border: 1px solid rgba(0, 242, 254, 0.2); }
+    .tag-camelot { color: var(--accent-purple); border: 1px solid rgba(157, 78, 221, 0.2); background: rgba(157, 78, 221, 0.1); }
+    .tag-ext { color: var(--accent-green); background: rgba(0, 255, 135, 0.1); border: 1px solid rgba(0, 255, 135, 0.2); }
+    .tag-radio { color: var(--accent-yellow); background: rgba(255, 183, 3, 0.1); border: 1px solid rgba(255, 183, 3, 0.2); }
+    .tag-dup { color: var(--accent-yellow); background: rgba(255, 183, 3, 0.2); border: 1px solid rgba(255, 183, 3, 0.4); font-weight:700; }
+    .tag-ai-reason { color: #ffffff; background: rgba(157, 78, 221, 0.25); border: 1px solid rgba(157, 78, 221, 0.5); }
+    .tag-real-data { color: var(--accent-cyan); background: rgba(0, 242, 254, 0.15); border: 1px solid rgba(0, 242, 254, 0.3); font-weight:700; }
+    .tag-genre { color: #e9d5ff; background: rgba(147, 51, 234, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); font-weight:600; }
+    .tag-genre-match { color: #86efac; background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.4); font-weight:700; }
+
+    .slot-recommendation {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .slot-score {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--accent-green);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .slot-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      max-width: 180px;
+      line-height: 1.3;
+    }
+
+    .btn-insert {
+      background: rgba(0, 255, 135, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(0, 255, 135, 0.3);
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-insert:hover {
+      background: var(--accent-green);
+      color: #000;
+      box-shadow: 0 0 12px rgba(0, 255, 135, 0.4);
+    }
+
+    .btn-disabled {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .playlist-table-wrapper {
+      max-height: 440px;
+      overflow-y: auto;
+    }
+
+    table.playlist-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    table.playlist-table th {
+      text-align: left;
+      padding: 10px 12px;
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      background: #0f1420;
+      z-index: 2;
+    }
+
+    table.playlist-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    table.playlist-table tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tr-new {
+      background: rgba(0, 242, 254, 0.08) !important;
+      border-left: 3px solid var(--accent-cyan);
+    }
+
+    .trans-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    .trans-green { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+    .trans-yellow { background: var(--accent-yellow); box-shadow: 0 0 6px var(--accent-yellow); }
+    .trans-red { background: var(--accent-red); box-shadow: 0 0 6px var(--accent-red); }
+
+    .btn-del {
+      background: transparent;
+      border: none;
+      color: rgba(255, 0, 85, 0.6);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn-del:hover {
+      color: var(--accent-red);
+      background: rgba(255, 0, 85, 0.15);
+    }
+
+    .token-guide-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: #0f1423;
+      border: 1px solid var(--accent-green);
+      border-radius: 20px;
+      max-width: 540px;
+      width: 100%;
+      padding: 28px;
+      box-shadow: 0 0 32px rgba(29, 185, 84, 0.3);
+    }
+
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 800;
+      color: #1db954;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-step {
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0,242,254,0.4); }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .save-indicator {
+      font-size: 11px;
+      color: var(--accent-green);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-logo">🌊</div>
+      <div>
+        <div class="brand-title">Ola Pro — EDM Automix</div>
+        <div class="brand-subtitle">IA Recomendadora por Curva • Vercel Ready • Sincronización Automática</div>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-badge">
+        <div class="stat-val" id="statTotalSongs">38</div>
+        <div class="stat-lbl">Canciones</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-val" id="statBpmRange">120 - 132</div>
+        <div class="stat-lbl">BPM Rango</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-val" id="statHarmonicScore">94.2%</div>
+        <div class="stat-lbl">Armonía General</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-val" id="statDominantGenre" style="font-size: 12px; color: var(--accent-cyan); font-weight:700;">Progressive House</div>
+        <div class="stat-lbl">Género Principal</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid-container">
+    
+    <div>
+      <div class="card">
+        <div class="card-title">
+          <span class="icon">📈</span> Curva de Energía "Sube-Baja" (Automix Wave)
+        </div>
+        <div class="chart-box">
+          <canvas id="energyChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span class="icon">🤖</span> Recomendador Inteligente (Beatport Live Sync)
+        </div>
+
+        <button class="btn btn-magic" id="btnSmartWaveRecommend">
+          ✨ Recomendar Canciones para Mejorar la Curva ("Sube-Baja")
+        </button>
+
+        <div class="search-box-group">
+          <input type="text" id="albumInput" class="input-field" placeholder="Busca cualquier canción, artista o álbum (ej: Hardwell, Toulouse, Motion)...">
+          <button class="btn" id="btnAnalyze">
+            <span>🔍 Buscar con Beatport</span>
+          </button>
+        </div>
+
+        <div id="topArtistsContainer" style="margin-top: 10px; margin-bottom: 14px; font-size: 11px;">
+          <div style="color: var(--text-muted); font-weight: 600; margin-bottom: 6px;">🔥 Artistas más usados en tu Set (Haz clic para buscar sus temas):</div>
+          <div id="topArtistsChips" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+        </div>
+
+        <div id="recommendResultsContainer">
+          <div style="text-align: center; color: var(--text-muted); padding: 20px 0;">
+            Haz clic arriba o busca una canción para realizar una consulta en vivo a Beatport y calcular su posición armónica exacta.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="padding: 18px;">
+        <div class="card-title" style="font-size: 15px; margin-bottom: 10px;">
+          <span class="icon">☁️</span> Sincronizar / Push Directo a tu Cuenta
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button class="btn btn-apple" style="font-size:12px; justify-content:center; padding:10px;" onclick="syncToAppleMusic()">
+            🍎 Apple Music (1-Click Vía TuneMyMusic)
+          </button>
+          <button class="btn btn-spotify" style="font-size:12px; justify-content:center; padding:10px;" onclick="openSpotifyTokenGuide()">
+            🟢 Push Directo a Spotify API (Pegar Token)
+          </button>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 18px;">
+        <div class="card-title" style="font-size: 15px; margin-bottom: 10px;">
+          <span class="icon">📥</span> Importar Playlist Existente
+        </div>
+        <textarea id="importTextarea" class="input-field" placeholder="Pega aquí tu lista de canciones (Formato: 'Cancion - Artista' por línea)..."></textarea>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+          <button class="btn btn-secondary" style="font-size: 12px; padding: 8px 16px;" id="btnImportPlaylist">
+            📥 Cargar Playlist
+          </button>
+          <span class="save-indicator" id="saveIndicator">💾 Guardado Automático Activo</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <div><span class="icon">🎶</span> Playlist Activa</div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button class="btn btn-magic" style="font-size: 11px; padding: 6px 12px;" onclick="reorderPlaylistHarmonically()" title="Reordena automáticamente todas las canciones para evitar saltos bruscos de BPM o desajustes armónicos Camelot">
+              🪄 Auto-Reorganizar Armónicamente
+            </button>
+            <button class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px;" id="btnResetPlaylist">Restablecer 38 Originales</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 10px; padding: 6px 10px; background: rgba(0, 242, 254, 0.05); border-radius: 8px; border: 1px solid rgba(0, 242, 254, 0.15);">
+          <label style="font-size: 11px; color: var(--accent-cyan); font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="autoSortToggle" checked style="accent-color: var(--accent-cyan); cursor: pointer;">
+            ⚡ Reorganizar automáticamente al insertar nuevas canciones (Transiciones Suaves)
+          </label>
+        </div>
+
+        <div class="playlist-table-wrapper">
+          <table class="playlist-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Canción</th>
+                <th>BPM</th>
+                <th>Camelot</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="playlistTableBody">
+            </tbody>
+          </table>
+        </div>
+
+        <div class="action-row">
+          <button class="btn btn-secondary" style="flex:1;" id="btnCopyTuneMyMusic">📋 Copiar TuneMyMusic</button>
+          <button class="btn" style="flex:1;" id="btnExportCSV">📥 Exportar CSV</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL DE SPOTIFY TOKEN Y SELECCION DE PLAYLIST -->
+  <div class="token-guide-modal" id="spotifyTokenModal">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-title">
+        <span>🟢 Sincronización Inteligente con Spotify</span>
+        <button style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;" onclick="closeSpotifyTokenGuide()">✕</button>
+      </div>
+
+      <div id="spotifyUserInfoBar" style="display:none; background: rgba(29,185,84,0.15); border:1px solid rgba(29,185,84,0.4); border-radius:10px; padding:12px 16px; margin-bottom:14px; font-size:13px; color:#1db954; font-weight:700;">
+        🟢 Conectado con Spotify
+      </div>
+
+      <div class="modal-step" style="background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
+        <b style="color: var(--accent-cyan);">Paso 1: Autenticación con Spotify</b>
+        <div style="margin-top: 8px;">
+          <button class="btn btn-spotify" style="width: 100%; justify-content: center; padding: 12px; font-weight: 700;" onclick="loginWithSpotify()">
+            🔑 Iniciar Sesión con Spotify (1-Click OAuth)
+          </button>
+        </div>
+        <details style="margin-top: 10px; font-size: 11px; color: var(--text-muted);">
+          <summary style="cursor: pointer;">O ingresar Token de Spotify manualmente (BQD...)</summary>
+          <input type="text" id="spotifyTokenInput" class="input-field" placeholder="Pega tu Access Token manual (BQD...)..." style="margin-top: 8px; width: 100%; font-size: 12px;">
+        </details>
+      </div>
+
+      <div class="modal-step" id="spotifyPlaylistConfigStep" style="background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
+        <b style="color: var(--accent-green);">Paso 2: Elegir o Crear Playlist</b>
+        <div style="margin-top: 10px;">
+          <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">Selecciona la Playlist de Destino:</label>
+          <select id="spotifyPlaylistSelect" class="input-field" style="width: 100%; font-size: 13px; padding: 10px;" onchange="handlePlaylistSelectChange(this.value)">
+            <option value="CREATE_NEW">➕ Crear Nueva Playlist (Nombre personalizado)</option>
+          </select>
+        </div>
+
+        <div id="newPlaylistNameGroup" style="margin-top: 10px;">
+          <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">Nombre para la Nueva Playlist:</label>
+          <input type="text" id="newPlaylistNameInput" class="input-field" value="Playlist EDM Sube-Baja (Automix)" style="width: 100%; font-size: 13px;">
+        </div>
+      </div>
+
+      <div id="spotifySyncStatus" style="display:none; background: rgba(0, 242, 254, 0.1); border:1px solid var(--accent-cyan); border-radius:10px; padding:12px; font-size:12px; color:var(--accent-cyan); margin-bottom:14px; text-align:center;">
+        🔄 Procesando sincronización...
+      </div>
+
+      <div style="margin-top: 14px;">
+        <button class="btn btn-spotify" style="width: 100%; justify-content: center; padding: 14px; font-weight: 800; font-size: 14px;" onclick="executeSpotifySync()">
+          🚀 Sincronizar Playlist (Sin Duplicados & Orden Armónico)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const INITIAL_PLAYLIST = [
+      { pos: 1, title: "Stay (Don't Go Away) [feat. Raye]", artist: "David Guetta", bpm: 120, key: "La menor", camelot: "8A" },
+      { pos: 2, title: "How Deep Is Your Love", artist: "Calvin Harris, Disciples", bpm: 122, key: "Si menor", camelot: "10A" },
+      { pos: 3, title: "This Is What You Came For", artist: "Calvin Harris & Rihanna", bpm: 124, key: "La menor", camelot: "8A" },
+      { pos: 4, title: "One Kiss", artist: "Calvin Harris, Dua Lipa", bpm: 124, key: "La menor", camelot: "8A" },
+      { pos: 5, title: "21 Reasons (feat. Ella Henderson)", artist: "Nathan Dawe", bpm: 124, key: "Fa# mayor", camelot: "2B" },
+      { pos: 6, title: "Wake Me Up", artist: "Avicii", bpm: 124, key: "Re mayor", camelot: "10B" },
+      { pos: 7, title: "Take Over Control (feat. Eva Simons)", artist: "Afrojack", bpm: 130, key: "Do menor", camelot: "5A" },
+      { pos: 8, title: "Titanium (feat. Sia)", artist: "David Guetta", bpm: 126, key: "Do menor", camelot: "5A" },
+      { pos: 9, title: "Drinking from the Bottle (feat. Tinie Tempah)", artist: "Calvin Harris", bpm: 128, key: "La menor", camelot: "8A" },
+      { pos: 10, title: "Outside (feat. Ellie Goulding)", artist: "Calvin Harris", bpm: 128, key: "Re menor", camelot: "7A" },
+      { pos: 11, title: "Summer", artist: "Calvin Harris", bpm: 128, key: "Mi menor", camelot: "9A" },
+      { pos: 12, title: "Feel So Close (Radio Edit)", artist: "Calvin Harris", bpm: 128, key: "Sol mayor", camelot: "9B" },
+      { pos: 13, title: "Baby Don't Hurt Me", artist: "David Guetta, Anne-Marie & Coi Leray", bpm: 128, key: "Sol mayor", camelot: "9B" },
+      { pos: 14, title: "We'll Be Coming Back (feat. Example)", artist: "Calvin Harris", bpm: 128, key: "Sol mayor", camelot: "9B" },
+      { pos: 15, title: "Miami 2 Ibiza", artist: "Swedish House Mafia & Tinie Tempah", bpm: 128, key: "Sol mayor", camelot: "9B" },
+      { pos: 16, title: "Sweet Nothing (feat. Florence Welch)", artist: "Calvin Harris", bpm: 128, key: "Sol# menor", camelot: "1A" },
+      { pos: 17, title: "Who's That Chick? (feat. Rihanna)", artist: "David Guetta", bpm: 128, key: "Si menor", camelot: "10A" },
+      { pos: 18, title: "Clarity (feat. Foxes)", artist: "Zedd", bpm: 128, key: "Lab mayor", camelot: "4B" },
+      { pos: 19, title: "Head & Heart (feat. MNEK)", artist: "Joel Corry", bpm: 123, key: "Lab mayor", camelot: "4B" },
+      { pos: 20, title: "Give Me Everything (feat. Ne-Yo, Afrojack & Nayer)", artist: "Pitbull", bpm: 129, key: "Lab mayor", camelot: "4B" },
+      { pos: 21, title: "Don't You Worry Child (feat. John Martin)", artist: "Swedish House Mafia", bpm: 129, key: "Re mayor", camelot: "10B" },
+      { pos: 22, title: "Memories (feat. Kid Cudi)", artist: "David Guetta", bpm: 130, key: "Sib menor", camelot: "3A" },
+      { pos: 23, title: "Play Hard (feat. Ne-Yo & Akon)", artist: "David Guetta", bpm: 130, key: "Sol# menor", camelot: "1A" },
+      { pos: 24, title: "Sexy Bitch (feat. Akon)", artist: "David Guetta", bpm: 130, key: "Si menor", camelot: "10A" },
+      { pos: 25, title: "Where Them Girls At (feat. Flo Rida & Nicki Minaj)", artist: "David Guetta", bpm: 130, key: "Mib mayor", camelot: "5B" },
+      { pos: 26, title: "Stay the Night (feat. Hayley Williams)", artist: "Zedd", bpm: 128, key: "La mayor", camelot: "11B" },
+      { pos: 27, title: "Bad (feat. Vassy)", artist: "David Guetta & Showtek", bpm: 128, key: "Fa menor", camelot: "4A" },
+      { pos: 28, title: "Silhouettes", artist: "Avicii", bpm: 128, key: "Fa menor", camelot: "4A" },
+      { pos: 29, title: "Levels", artist: "Avicii", bpm: 126, key: "Do# menor", camelot: "12A" },
+      { pos: 30, title: "Won't Look Back", artist: "Duke Dumont", bpm: 124, key: "Lab menor", camelot: "1A" },
+      { pos: 31, title: "I Got U (feat. Jax Jones)", artist: "Duke Dumont", bpm: 121, key: "La menor", camelot: "8A" },
+      { pos: 32, title: "Rather Be (feat. Jess Glynne)", artist: "Clean Bandit", bpm: 121, key: "Si mayor", camelot: "7B" },
+      { pos: 33, title: "The Motto", artist: "Tiësto & Ava Max", bpm: 120, key: "Sib menor", camelot: "3A" },
+      { pos: 34, title: "Overdrive (feat. Norma Jean Martine)", artist: "Ofenbach", bpm: 127, key: "Reb mayor", camelot: "3B" },
+      { pos: 35, title: "Animals", artist: "Martin Garrix", bpm: 128, key: "Reb mayor", camelot: "3B" },
+      { pos: 36, title: "Sun Is Shining", artist: "Axwell Λ Ingrosso", bpm: 132, key: "Re mayor", camelot: "10B" },
+      { pos: 37, title: "I'm Good (Blue)", artist: "David Guetta & Bebe Rexha", bpm: 128, key: "Sol menor", camelot: "6A" },
+      { pos: 38, title: "Where You Are", artist: "John Summit & HAYLA", bpm: 126, key: "La menor", camelot: "8A" }
+    ];
+
+    const EDM_CANDIDATES_POOL = [
+      { title: "Heroes (We Could Be) [feat. Tove Lo]", artist: "Alesso", bpm: 126, camelot: "10B", isExtended: true, phase: "Ascenso 124->128" },
+      { title: "Million Voices", artist: "Otto Knows", bpm: 126, camelot: "5B", isExtended: true, phase: "Pico 126->128" },
+      { title: "Reload (Vocal Mix)", artist: "Sebastian Ingrosso, Tommy Trash, John Martin", bpm: 128, camelot: "9B", isExtended: true, phase: "Pico 128 BPM" },
+      { title: "Calling (Lose My Mind)", artist: "Sebastian Ingrosso & Alesso", bpm: 126, camelot: "10B", isExtended: true, phase: "Ascenso 124->128" },
+      { title: "If I Lose Myself", artist: "OneRepublic vs. Alesso", bpm: 126, camelot: "10B", isExtended: true, phase: "Ascenso 124->128" },
+      { title: "Spectrum (feat. Matthew Koma)", artist: "Zedd", bpm: 130, camelot: "4B", isExtended: true, phase: "Pico Máximo 130 BPM" },
+      { title: "I Could Be The One", artist: "Avicii vs Nicky Romero", bpm: 128, camelot: "11B", isExtended: true, phase: "Pico 128 BPM" },
+      { title: "The Nights", artist: "Avicii", bpm: 126, camelot: "10B", isExtended: true, phase: "Ascenso 124->126" },
+      { title: "Red Lights", artist: "Tiësto", bpm: 125, camelot: "9B", isExtended: true, phase: "Subida Intermedia" },
+      { title: "Secrets (feat. Vassy)", artist: "Tiësto & KSHMR", bpm: 128, camelot: "4A", isExtended: true, phase: "Pico 128 BPM" },
+      { title: "No Money", artist: "Galantis", bpm: 126, camelot: "3B", isExtended: true, phase: "Re-ascenso Final" },
+      { title: "In the Name of Love", artist: "Martin Garrix & Bebe Rexha", bpm: 134, camelot: "3B", isExtended: true, phase: "Clímax Final 132+ BPM" },
+      { title: "Tremor", artist: "Dimitri Vegas & Like Mike, Martin Garrix", bpm: 128, camelot: "4A", isExtended: true, phase: "Pico Big Room" },
+      { title: "Disarm You (feat. Ilsey)", artist: "Kaskade", bpm: 124, camelot: "8A", isExtended: true, phase: "Valle / Descenso" },
+      { title: "Spaceman", artist: "Hardwell", bpm: 128, camelot: "6A", isExtended: true, phase: "Pico Big Room 128 BPM" },
+      { title: "Blah Blah Blah", artist: "Armin van Buuren", bpm: 138, camelot: "4A", isExtended: true, phase: "Clímax Ultra Fast" },
+      { title: "On My Mind", artist: "Don Diablo", bpm: 126, camelot: "10A", isExtended: true, phase: "Future House Ascenso" },
+      { title: "Losing It", artist: "Fisher", bpm: 125, camelot: "4A", isExtended: true, phase: "Tech House Groove" },
+      { title: "Piece Of Your Heart (feat. GOODBOYS)", artist: "Meduza", bpm: 124, camelot: "10A", isExtended: true, phase: "Subida Melódica" },
+      { title: "Greyhound", artist: "Swedish House Mafia", bpm: 126, camelot: "5A", isExtended: true, phase: "Electro Peak" },
+      { title: "Strobe", artist: "deadmau5", bpm: 128, camelot: "1A", isExtended: true, phase: "Progressive Anthem" },
+      { title: "Rattle", artist: "Bingo Players", bpm: 128, camelot: "10B", isExtended: true, phase: "Dutch House Peak" },
+      { title: "The Code", artist: "W&W & Ummet Ozcan", bpm: 128, camelot: "6A", isExtended: true, phase: "Big Room Drop" },
+      { title: "Flashlight", artist: "R3HAB & Deorro", bpm: 128, camelot: "4A", isExtended: true, phase: "Bounce Peak" },
+      { title: "Gecko (Overdrive)", artist: "Oliver Heldens & Becky Hill", bpm: 125, camelot: "8A", isExtended: true, phase: "Deep House Drive" },
+      { title: "Eternity", artist: "Anyma & Chris Avantgarde", bpm: 126, camelot: "2A", isExtended: true, phase: "Melodic Techno Peak" },
+      { title: "Shift", artist: "John Summit", bpm: 126, camelot: "8A", isExtended: true, phase: "Tech House Energy" },
+      { title: "Dreams", artist: "David Guetta & MORTEN", bpm: 126, camelot: "10A", isExtended: true, phase: "Future Rave Drop" },
+      { title: "Carry You", artist: "Martin Garrix & Third Party", bpm: 128, camelot: "10B", isExtended: true, phase: "Progressive Mainstage" },
+      { title: "Boneless", artist: "Steve Aoki, Chris Lake & Tujamo", bpm: 128, camelot: "4A", isExtended: true, phase: "Electro Bang" },
+      { title: "Toulouse", artist: "Nicky Romero", bpm: 128, camelot: "4A", isExtended: true, phase: "Classic Peak" },
+      { title: "Tsunami", artist: "DVBBS & Borgeous", bpm: 128, camelot: "4A", isExtended: true, phase: "Big Room Anthem" },
+      { title: "Booyah", artist: "Showtek, We Are Loud! & Sonny Wilson", bpm: 128, camelot: "4A", isExtended: true, phase: "Reggae-Bounce Drop" },
+      { title: "Mammoth", artist: "Dimitri Vegas, Like Mike & Moguai", bpm: 128, camelot: "6A", isExtended: true, phase: "Big Room Classic" },
+      { title: "Sun & Moon (feat. Richard Bedford)", artist: "Above & Beyond", bpm: 128, camelot: "9A", isExtended: true, phase: "Trance Progressive" },
+      { title: "Pyramids (feat. Luciana)", artist: "DVBBS & Dropgun", bpm: 128, camelot: "4A", isExtended: true, phase: "Vocal Drop Peak" },
+      { title: "Runaway (U & I)", artist: "Galantis", bpm: 126, camelot: "10B", isExtended: true, phase: "Vocal Dance Peak" }
+    ];
+
+    let currentPlaylist = [];
+    let energyChart = null;
+    let currentMode = 'ai';
+
+    function savePlaylistToLocalStorage() {
+      if (!currentPlaylist || currentPlaylist.length === 0) return;
+      localStorage.setItem('edm_automix_playlist', JSON.stringify(currentPlaylist));
+      const ind = document.getElementById('saveIndicator');
+      if (ind) {
+        ind.innerText = "💾 Cambios Guardados";
+        setTimeout(() => { ind.innerText = "💾 Guardado Automático Activo"; }, 2000);
+      }
+    }
+
+    function loadPlaylistFromLocalStorage() {
+      const saved = localStorage.getItem('edm_automix_playlist');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            currentPlaylist = parsed;
+            return;
+          }
+        } catch(e){}
+      }
+      currentPlaylist = JSON.parse(JSON.stringify(INITIAL_PLAYLIST));
+    }
+
+    function normalizeSongTitle(str) {
+      if (!str) return '';
+      return str.toLowerCase()
+        .replace(/\[.*?\]|\(.*?\)/g, '')
+        .replace(/feat\..*|ft\..*/gi, '')
+        .replace(/[^a-z0-9]/gi, '')
+        .trim();
+    }
+
+    function checkIsDuplicate(trackTitle) {
+      const normTarget = normalizeSongTitle(trackTitle);
+      for (let i = 0; i < currentPlaylist.length; i++) {
+        const normExist = normalizeSongTitle(currentPlaylist[i].title);
+        if (normTarget.includes(normExist) || normExist.includes(normTarget)) {
+          return { isDuplicate: true, pos: i + 1, existingTitle: currentPlaylist[i].title };
+        }
+      }
+      return { isDuplicate: false };
+    }
+
+    function initChart() {
+      const ctx = document.getElementById('energyChart').getContext('2d');
+      const labels = currentPlaylist.map((s, i) => `#${i + 1}`);
+      const dataBpm = currentPlaylist.map(s => s.bpm);
+
+      energyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Tempo (BPM)',
+            data: dataBpm,
+            borderColor: '#00f2fe',
+            borderWidth: 3,
+            backgroundColor: 'rgba(0, 242, 254, 0.1)',
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#00ff87',
+            pointRadius: 4,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: (items) => {
+                  const idx = items[0].dataIndex;
+                  return `#${idx + 1}: ${currentPlaylist[idx].title}`;
+                },
+                label: (item) => {
+                  const s = currentPlaylist[item.dataIndex];
+                  return `BPM: ${s.bpm} | Camelot: ${s.camelot} (${s.key||''})`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: { display: false },
+            y: {
+              min: 115,
+              max: 135,
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans' } }
+            }
+          }
+        }
+      });
+    }
+
+    function getDominantPlaylistGenre() {
+      if (!currentPlaylist || currentPlaylist.length === 0) return "Progressive House";
+      const counts = {};
+      currentPlaylist.forEach(s => {
+        const g = s.genre || "Progressive House";
+        counts[g] = (counts[g] || 0) + 1;
+      });
+      let mainGenre = "Progressive House";
+      let maxCount = 0;
+      for (const g in counts) {
+        if (counts[g] > maxCount) {
+          maxCount = counts[g];
+          mainGenre = g;
+        }
+      }
+      return mainGenre;
+    }
+
+    function getTopPlaylistArtists() {
+      const counts = {};
+      currentPlaylist.forEach(s => {
+        if (!s.artist) return;
+        const mainArtist = s.artist.split(/,|&|feat\.|ft\./i)[0].trim();
+        if (mainArtist && mainArtist.length > 2) {
+          counts[mainArtist] = (counts[mainArtist] || 0) + 1;
+        }
+      });
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      return sorted.slice(0, 6);
+    }
+
+    function updateTopArtistsChips() {
+      const container = document.getElementById('topArtistsChips');
+      if (!container) return;
+      container.innerHTML = '';
+      const topArtists = getTopPlaylistArtists();
+
+      topArtists.forEach(([artist, count]) => {
+        const chip = document.createElement('button');
+        chip.className = 'tag tag-real-data';
+        chip.style.cursor = 'pointer';
+        chip.style.border = '1px solid rgba(0, 242, 254, 0.4)';
+        chip.style.transition = 'all 0.2s ease';
+        chip.innerHTML = `👤 ${artist} (${count})`;
+        chip.onclick = () => {
+          document.getElementById('albumInput').value = artist;
+          analyzeAlbumQuery(artist);
+        };
+        container.appendChild(chip);
+      });
+    }
+
+    function updatePlaylistTable() {
+      const tbody = document.getElementById('playlistTableBody');
+      tbody.innerHTML = '';
+      currentPlaylist.forEach((s, idx) => {
+        const tr = document.createElement('tr');
+        if (s.isNew) tr.classList.add('tr-new');
+        
+        let transClass = 'trans-green';
+        if (idx > 0) {
+          const prevBpm = currentPlaylist[idx - 1].bpm;
+          const diff = Math.abs(s.bpm - prevBpm);
+          if (diff > 4) transClass = 'trans-red';
+          else if (diff > 2) transClass = 'trans-yellow';
+        }
+
+        tr.innerHTML = `
+          <td><span class="trans-indicator ${transClass}"></span><b>${idx + 1}</b></td>
+          <td>
+            <div style="font-weight:600; color:#fff;">${s.title}</div>
+            <div style="font-size:11px; color:#94a3b8;">${s.artist} ${s.genre ? `• <span class="tag tag-genre" style="font-size:9px; padding:1px 5px;">🎵 ${s.genre}</span>` : ''}</div>
+          </td>
+          <td><b>${s.bpm}</b></td>
+          <td><span class="tag tag-camelot">${s.camelot}</span></td>
+          <td><button class="btn-del" onclick="deleteTrack(${idx})" title="Eliminar canción">✕</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('statTotalSongs').innerText = currentPlaylist.length;
+      const bpms = currentPlaylist.map(s => s.bpm);
+      if (bpms.length > 0) {
+        document.getElementById('statBpmRange').innerText = `${Math.min(...bpms)} - ${Math.max(...bpms)}`;
+      }
+
+      const domGenre = getDominantPlaylistGenre();
+      const domElem = document.getElementById('statDominantGenre');
+      if (domElem) domElem.innerText = domGenre;
+      updateTopArtistsChips();
+
+      if (energyChart) {
+        energyChart.data.labels = currentPlaylist.map((s, i) => `#${i + 1}`);
+        energyChart.data.datasets[0].data = currentPlaylist.map(s => s.bpm);
+        energyChart.update();
+      }
+
+      savePlaylistToLocalStorage();
+    }
+
+    window.deleteTrack = function(index) {
+      if (confirm(`¿Eliminar '${currentPlaylist[index].title}' de la playlist?`)) {
+        currentPlaylist.splice(index, 1);
+        updatePlaylistTable();
+        refreshCurrentRecommendationsView();
+      }
+    };
+
+    function evaluateCamelotDistance(c1, c2) {
+      if (!c1 || !c2) return 50;
+      const m1 = c1.match(/(\d+)([AB])/);
+      const m2 = c2.match(/(\d+)([AB])/);
+      if (!m1 || !m2) return 50;
+      const n1 = parseInt(m1[1]), l1 = m1[2];
+      const n2 = parseInt(m2[1]), l2 = m2[2];
+      const diff = Math.min(Math.abs(n1 - n2), 12 - Math.abs(n1 - n2));
+      if (diff === 0 && l1 === l2) return 100;
+      if (diff === 0 && l1 !== l2) return 90;
+      if (diff === 1 && l1 === l2) return 85;
+      if (diff === 1 && l1 !== l2) return 70;
+      return Math.max(10, 40 - diff * 5);
+    }
+
+    function findOptimalSlot(track) {
+      let bestSlot = 1;
+      let maxScore = -1;
+      let prevTitle = "[INICIO]", nextTitle = "[FINAL]";
+
+      for (let i = 0; i <= currentPlaylist.length; i++) {
+        const prev = i > 0 ? currentPlaylist[i - 1] : null;
+        const next = i < currentPlaylist.length ? currentPlaylist[i] : null;
+
+        const sPrev = prev ? (evaluateCamelotDistance(prev.camelot, track.camelot)*0.55 + (Math.abs(prev.bpm - track.bpm) <= 2 ? 100 : 60)*0.45) : 85;
+        const sNext = next ? (evaluateCamelotDistance(track.camelot, next.camelot)*0.55 + (Math.abs(next.bpm - track.bpm) <= 2 ? 100 : 60)*0.45) : 85;
+        
+        let avg = (sPrev + sNext) / 2;
+        if (track.isExtended) avg = Math.min(100, avg + 5);
+
+        if (avg > maxScore) {
+          maxScore = avg;
+          bestSlot = i + 1;
+          prevTitle = prev ? prev.title : "[INICIO]";
+          nextTitle = next ? next.title : "[FINAL]";
+        }
+      }
+      return { slot: bestSlot, score: Math.round(maxScore), prevTitle, nextTitle };
+    }
+
+    window.reorderPlaylistHarmonically = function(silent = false) {
+      if (!currentPlaylist || currentPlaylist.length <= 1) return;
+
+      const remaining = [...currentPlaylist];
+      const sorted = [];
+
+      remaining.sort((a, b) => a.bpm - b.bpm);
+      let current = remaining.shift();
+      sorted.push(current);
+
+      const totalCount = currentPlaylist.length;
+
+      while (remaining.length > 0) {
+        const stepIdx = sorted.length;
+        const progressRatio = stepIdx / totalCount;
+
+        let targetBpm = 124;
+        if (progressRatio < 0.15) targetBpm = 120 + progressRatio * 25;
+        else if (progressRatio < 0.50) targetBpm = 126 + (progressRatio - 0.15) * 11;
+        else if (progressRatio < 0.70) targetBpm = 122 + (progressRatio - 0.50) * 10;
+        else targetBpm = 128 + (progressRatio - 0.70) * 14;
+
+        let bestIdx = 0;
+        let minCost = Infinity;
+
+        for (let i = 0; i < remaining.length; i++) {
+          const cand = remaining[i];
+          const camelotScore = evaluateCamelotDistance(current.camelot, cand.camelot);
+          const bpmDiff = Math.abs(current.bpm - cand.bpm);
+          const targetBpmDiff = Math.abs(cand.bpm - targetBpm);
+
+          const camelotCost = (100 - camelotScore) * 1.5;
+          const bpmJumpCost = (bpmDiff > 3) ? (bpmDiff * 12) : (bpmDiff * 2);
+          const curveCost = targetBpmDiff * 1.8;
+
+          const totalCost = camelotCost + bpmJumpCost + curveCost;
+
+          if (totalCost < minCost) {
+            minCost = totalCost;
+            bestIdx = i;
+          }
+        }
+
+        current = remaining.splice(bestIdx, 1)[0];
+        sorted.push(current);
+      }
+
+      currentPlaylist = sorted;
+      updatePlaylistTable();
+      refreshCurrentRecommendationsView();
+
+      if (!silent) {
+        const ind = document.getElementById('saveIndicator');
+        if (ind) {
+          ind.innerText = "✨ ¡Playlist Reorganizada Armónicamente!";
+          setTimeout(() => { ind.innerText = "💾 Guardado Automático Activo"; }, 2500);
+        }
+      }
+    };
+
+    function refreshCurrentRecommendationsView() {
+      if (currentMode === 'ai') {
+        generateSmartWaveRecommendations();
+      } else {
+        const q = document.getElementById('albumInput').value.trim();
+        if (q) analyzeAlbumQuery(q);
+      }
+    }
+
+    let recommendationSeed = 0;
+
+    function generateSmartWaveRecommendations(forceNewBatch = false) {
+      currentMode = 'ai';
+      if (forceNewBatch) {
+        recommendationSeed++;
+      }
+
+      const container = document.getElementById('recommendResultsContainer');
+
+      // 1. Filter out candidate songs ALREADY in currentPlaylist
+      const availableCandidates = EDM_CANDIDATES_POOL.filter(cand => {
+        return !checkIsDuplicate(cand.title).isDuplicate;
+      });
+
+      if (availableCandidates.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">
+          🎉 ¡Has añadido todas las canciones recomendadas de nuestro catálogo a tu mezcla!
+        </div>`;
+        return;
+      }
+
+      // 2. Shuffle candidates predictably based on recommendationSeed + position
+      const shuffled = [...availableCandidates].sort((a, b) => {
+        const hashA = (a.title.length * 31 + recommendationSeed * 17) % 100;
+        const hashB = (b.title.length * 31 + recommendationSeed * 17) % 100;
+        return hashA - hashB;
+      });
+
+      // Pick top 6 fresh candidates
+      const displayBatch = shuffled.slice(0, 6);
+
+      let html = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div style="font-size:12px; color:var(--accent-purple); font-weight:700; text-transform:uppercase;">
+            ✨ Recomendaciones IA para tu curva "Sube-Baja" (Lote #${recommendationSeed + 1}):
+          </div>
+          <button class="btn btn-secondary" style="font-size:11px; padding:6px 12px; gap:4px; border-color:var(--accent-purple); color:var(--accent-cyan);" onclick="generateSmartWaveRecommendations(true)">
+            🎲 Generar Otras 6 Recomendaciones Nuevas
+          </button>
+        </div>
+        <div class="recommend-list">
+      `;
+
+      displayBatch.forEach((cand) => {
+        const dupCheck = checkIsDuplicate(cand.title);
+        const resSlot = findOptimalSlot(cand);
+
+        let aiReason = `Optimiza la curva en la sección ${cand.phase}`;
+        if (resSlot.slot <= 6) aiReason = "Suaviza el ascenso inicial (120→124 BPM)";
+        else if (resSlot.slot <= 25) aiReason = "Refuerza el pico Mainstage (126→130 BPM)";
+        else if (resSlot.slot <= 33) aiReason = "Mejora la transición del valle (120-124 BPM)";
+        else aiReason = "Potencia el clímax final (128→132 BPM)";
+
+        html += `
+          <div class="recommend-card card-smart-ai ${dupCheck.isDuplicate ? 'card-duplicate' : ''}">
+            <div class="track-info">
+              <div class="track-name">${cand.title}</div>
+              <div class="track-artist">${cand.artist}</div>
+              <div class="track-meta">
+                <span class="tag tag-genre">🎵 ${cand.genre || 'EDM'}</span>
+                <span class="tag tag-bpm">${cand.bpm} BPM</span>
+                <span class="tag tag-camelot">Camelot ${cand.camelot}</span>
+                <span class="tag tag-ext">🎧 Extended Mix</span>
+                <span class="tag tag-ai-reason">💡 ${aiReason}</span>
+                ${dupCheck.isDuplicate ? `<span class="tag tag-dup">⚠️ Ya en Playlist (#${dupCheck.pos})</span>` : ''}
+              </div>
+            </div>
+
+            <div class="slot-recommendation">
+              ${dupCheck.isDuplicate 
+                ? `<div class="slot-score" style="color:var(--accent-yellow);">Posición Actual: #${dupCheck.pos}</div>
+                   <div class="slot-desc">Ya está incluida en tu set</div>
+                   <button class="btn-insert btn-disabled" disabled>⚠️ Ya en Playlist</button>`
+                : `<div class="slot-score">🟢 Slot #${resSlot.slot} (${resSlot.score}%)</div>
+                   <div class="slot-desc">Entre #${resSlot.slot-1 > 0 ? resSlot.slot-1 : 'Inicio'} y #${resSlot.slot}</div>
+                   <button class="btn-insert" onclick="insertTrack('${encodeURIComponent(JSON.stringify(cand))}', ${resSlot.slot})">
+                     ＋ Insertar
+                   </button>`
+              }
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    async function analyzeAlbumQuery(query) {
+      currentMode = 'search';
+      const container = document.getElementById('recommendResultsContainer');
+      container.innerHTML = `<div style="text-align:center; padding:30px;"><span style="font-size:24px;">🔄</span> Consultando metadatos 100% reales en Beatport + iTunes...</div>`;
+
+      try {
+        const url = `/api/search?q=${encodeURIComponent(query)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        const results = data.results || [];
+
+        if (results.length === 0) {
+          container.innerHTML = `<div style="color:var(--accent-red); text-align:center; padding:20px;">No se encontraron resultados para '${query}'. Prueba con otro término.</div>`;
+          return;
+        }
+
+        let html = `<div class="recommend-list">`;
+
+        results.forEach((item) => {
+          const title = item.title;
+          const artist = item.artist;
+          const bpm = item.bpm;
+          const camelot = item.camelot;
+          const isExtended = item.isExtended;
+          const durSec = item.durSec;
+          const genre = item.genre || "EDM / Dance";
+
+          const domGenre = getDominantPlaylistGenre();
+          const isGenreMatch = genre.toLowerCase().includes(domGenre.toLowerCase()) || domGenre.toLowerCase().includes(genre.toLowerCase());
+
+          const trackObj = { title, artist, bpm, camelot, isExtended, durSec, genre };
+          const resSlot = findOptimalSlot(trackObj);
+          const dupCheck = checkIsDuplicate(title);
+
+          html += `
+            <div class="recommend-card ${dupCheck.isDuplicate ? 'card-duplicate' : ''}">
+              <div class="track-info">
+                <div class="track-name">${title}</div>
+                <div class="track-artist">${artist} • ${Math.floor(durSec/60)}:${(durSec%60).toString().padStart(2,'0')}</div>
+                <div class="track-meta">
+                  <span class="tag tag-real-data">🎧 Beatport Verificado</span>
+                  <span class="tag tag-genre">🎵 ${genre}</span>
+                  ${isGenreMatch ? '<span class="tag tag-genre-match">🎯 Género del Set</span>' : ''}
+                  <span class="tag tag-bpm">${bpm} BPM</span>
+                  <span class="tag tag-camelot">Camelot ${camelot}</span>
+                  <span class="tag ${isExtended ? 'tag-ext':'tag-radio'}">${isExtended ? 'Extended Mix' : 'Radio Edit'}</span>
+                  ${dupCheck.isDuplicate ? `<span class="tag tag-dup">⚠️ Ya en Playlist (#${dupCheck.pos})</span>` : ''}
+                </div>
+              </div>
+
+              <div class="slot-recommendation">
+                ${dupCheck.isDuplicate 
+                  ? `<div class="slot-score" style="color:var(--accent-yellow);">Posición Actual: #${dupCheck.pos}</div>
+                     <div class="slot-desc">Ya está incluida en tu set</div>
+                     <button class="btn-insert btn-disabled" disabled>⚠️ Ya en Playlist</button>`
+                  : `<div class="slot-score">🟢 Slot #${resSlot.slot} (${resSlot.score}%)</div>
+                     <div class="slot-desc">Entre #${resSlot.slot-1 > 0 ? resSlot.slot-1 : 'Inicio'} y #${resSlot.slot}</div>
+                     <button class="btn-insert" onclick="insertTrack('${encodeURIComponent(JSON.stringify(trackObj))}', ${resSlot.slot})">
+                       ＋ Insertar
+                     </button>`
+                }
+              </div>
+            </div>
+          `;
+        });
+
+        html += `</div>`;
+        container.innerHTML = html;
+
+      } catch (err) {
+        container.innerHTML = `<div style="color:var(--accent-red); padding:20px;">Error al consultar Beatport API backend: ${err.message}</div>`;
+      }
+    }
+
+    const SPOTIFY_CLIENT_ID = "9a0069b06ee54e049ad75eaf99e986fd";
+
+    window.openSpotifyTokenGuide = async function() {
+      document.getElementById('spotifyTokenModal').style.display = 'flex';
+      const savedToken = localStorage.getItem('spotify_access_token');
+      if (savedToken) {
+        await checkAndLoadSpotifyUser(savedToken);
+      }
+    };
+
+    window.closeSpotifyTokenGuide = function() {
+      document.getElementById('spotifyTokenModal').style.display = 'none';
+      const statusBox = document.getElementById('spotifySyncStatus');
+      if (statusBox) statusBox.style.display = 'none';
+    };
+
+    window.handlePlaylistSelectChange = function(val) {
+      const group = document.getElementById('newPlaylistNameGroup');
+      if (group) {
+        group.style.display = (val === 'CREATE_NEW') ? 'block' : 'none';
+      }
+    };
+
+    async function checkAndLoadSpotifyUser(token) {
+      const infoBar = document.getElementById('spotifyUserInfoBar');
+      try {
+        const userResp = await fetch('https://api.spotify.com/v1/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!userResp.ok) throw new Error("Sesión expirada");
+        const userData = await userResp.json();
+
+        if (infoBar) {
+          infoBar.style.display = 'block';
+          infoBar.innerHTML = `🟢 Conectado como: <b>${userData.display_name || userData.id}</b> (${userData.email || 'Usuario Spotify'}) — Selecciona una playlist abajo y pulsa 'Sincronizar':`;
+        }
+
+        // Load ALL existing user playlists with pagination
+        await loadAllSpotifyPlaylists(token);
+      } catch(e) {
+        if (infoBar) infoBar.style.display = 'none';
+        localStorage.removeItem('spotify_access_token');
+      }
+    }
+
+    async function loadAllSpotifyPlaylists(token) {
+      const select = document.getElementById('spotifyPlaylistSelect');
+      if (!select) return;
+
+      select.innerHTML = `<option value="CREATE_NEW">➕ Crear Nueva Playlist (Nombre personalizado)</option>`;
+      let url = 'https://api.spotify.com/v1/me/playlists?limit=50';
+
+      while (url) {
+        try {
+          const resp = await fetch(url, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!resp.ok) break;
+          const data = await resp.json();
+          const items = data.items || [];
+          items.forEach(p => {
+            if (p && p.id && p.name) {
+              const num = p.tracks && typeof p.tracks.total === 'number' ? p.tracks.total : (p.tracks_total || null);
+              const label = (num !== null && num > 0) ? ` (${num} canciones)` : '';
+              select.innerHTML += `<option value="${p.id}">📑 ${p.name}${label}</option>`;
+            }
+          });
+          url = data.next;
+        } catch(e) {
+          break;
+        }
+      }
+    }
+
+    function generateRandomString(length) {
+      const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const values = crypto.getRandomValues(new Uint8Array(length));
+      return values.reduce((acc, x) => acc + possible[x % possible.length], "");
+    }
+
+    async function sha256(plain) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(plain);
+      return window.crypto.subtle.digest('SHA-256', data);
+    }
+
+    function base64encode(input) {
+      return btoa(String.fromCharCode(...new Uint8Array(input)))
+        .replace(/=/g, '')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+    }
+
+    window.loginWithSpotify = async function() {
+      const codeVerifier = generateRandomString(64);
+      sessionStorage.setItem('spotify_code_verifier', codeVerifier);
+
+      const hashed = await sha256(codeVerifier);
+      const codeChallenge = base64encode(hashed);
+
+      const redirectUri = window.location.origin + window.location.pathname;
+      const scopes = "playlist-modify-public playlist-modify-private playlist-read-private playlist-read-collaborative";
+
+      const authUrl = new URL("https://accounts.spotify.com/authorize");
+      authUrl.search = new URLSearchParams({
+        response_type: 'code',
+        client_id: SPOTIFY_CLIENT_ID,
+        scope: scopes,
+        code_challenge_method: 'S256',
+        code_challenge: codeChallenge,
+        redirect_uri: redirectUri,
+      }).toString();
+
+      window.location.href = authUrl.toString();
+    };
+
+    async function checkSpotifyAuthCode() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      if (code) {
+        const codeVerifier = sessionStorage.getItem('spotify_code_verifier');
+        const redirectUri = window.location.origin + window.location.pathname;
+
+        try {
+          const response = await fetch('https://accounts.spotify.com/api/token', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+              client_id: SPOTIFY_CLIENT_ID,
+              grant_type: 'authorization_code',
+              code: code,
+              redirect_uri: redirectUri,
+              code_verifier: codeVerifier,
+            }),
+          });
+
+          const data = await response.json();
+          if (data.access_token) {
+            localStorage.setItem('spotify_access_token', data.access_token);
+            window.history.replaceState(null, null, window.location.pathname);
+            setTimeout(() => {
+              openSpotifyTokenGuide();
+            }, 500);
+          } else {
+            alert("Error al autenticar en Spotify: " + (data.error_description || data.error));
+          }
+        } catch (e) {
+          console.error("Error PKCE token exchange:", e);
+        }
+      }
+    }
+
+    window.executeSpotifySync = async function() {
+      let token = localStorage.getItem('spotify_access_token');
+      const manualInput = document.getElementById('spotifyTokenInput')?.value.trim();
+      if (manualInput) {
+        token = manualInput;
+        localStorage.setItem('spotify_access_token', manualInput);
+      }
+
+      if (!token) {
+        alert("Por favor inicia sesión con Spotify primero o pega tu token manual.");
+        return;
+      }
+
+      const statusBox = document.getElementById('spotifySyncStatus');
+      statusBox.style.display = 'block';
+      statusBox.innerHTML = `🔄 Verificando sesión con Spotify API...`;
+
+      try {
+        const userResp = await fetch('https://api.spotify.com/v1/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!userResp.ok) throw new Error("Sesión de Spotify expirada. Vuelve a iniciar sesión.");
+        const userData = await userResp.json();
+
+        const playlistSelect = document.getElementById('spotifyPlaylistSelect');
+        const selectedOption = playlistSelect ? playlistSelect.value : 'CREATE_NEW';
+
+        let targetPlaylistId = null;
+        let targetPlaylistName = "";
+        let targetPlaylistUrl = "";
+
+        if (selectedOption === 'CREATE_NEW') {
+          const customName = document.getElementById('newPlaylistNameInput')?.value.trim() || "Playlist EDM Sube-Baja (Automix)";
+          statusBox.innerHTML = `➕ Creando nueva playlist: '${customName}'...`;
+
+          const createResp = await fetch(`https://api.spotify.com/v1/me/playlists`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name: customName,
+              description: "Playlist sincronizada con Ola Pro EDM Automix ordenadas por Curva BPM y Camelot",
+              public: true
+            })
+          });
+
+          if (!createResp.ok) {
+            const errJson = await createResp.json();
+            throw new Error(errJson.error?.message || "No se pudo crear la playlist en Spotify.");
+          }
+
+          const pData = await createResp.json();
+          targetPlaylistId = pData.id;
+          targetPlaylistName = pData.name;
+          targetPlaylistUrl = pData.external_urls?.spotify;
+        } else {
+          targetPlaylistId = selectedOption;
+          const selectedIndex = playlistSelect.selectedIndex;
+          targetPlaylistName = playlistSelect.options[selectedIndex].text;
+          targetPlaylistUrl = `https://open.spotify.com/playlist/${targetPlaylistId}`;
+        }
+
+        // Search track URIs
+        statusBox.innerHTML = `🔎 Buscando ${currentPlaylist.length} canciones en catálogo de Spotify...`;
+        const uris = [];
+        let foundCount = 0;
+
+        for (let i = 0; i < currentPlaylist.length; i++) {
+          const s = currentPlaylist[i];
+          statusBox.innerHTML = `🔎 Buscando (${i + 1}/${currentPlaylist.length}): ${s.title}...`;
+          try {
+            const q = `${s.title} ${s.artist}`;
+            const searchResp = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=1`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (searchResp.ok) {
+              const sData = await searchResp.json();
+              const items = sData?.tracks?.items || [];
+              if (items.length > 0) {
+                uris.push(items[0].uri);
+                foundCount++;
+              }
+            }
+          } catch(e){}
+        }
+
+        // Write tracks to playlist with POST for new playlists and fallback PUT/POST for existing ones
+        statusBox.innerHTML = `⚡ Sincronizando ${uris.length} canciones ordenadas en '${targetPlaylistName}'...`;
+        if (uris.length > 0) {
+          const firstBatch = uris.slice(0, 100);
+          let writeResp;
+
+          if (selectedOption === 'CREATE_NEW') {
+            writeResp = await fetch(`https://api.spotify.com/v1/playlists/${targetPlaylistId}/tracks`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ uris: firstBatch })
+            });
+          } else {
+            writeResp = await fetch(`https://api.spotify.com/v1/playlists/${targetPlaylistId}/tracks`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ uris: firstBatch })
+            });
+
+            if (!writeResp.ok && writeResp.status === 403) {
+              writeResp = await fetch(`https://api.spotify.com/v1/playlists/${targetPlaylistId}/tracks`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ uris: firstBatch })
+              });
+            }
+          }
+
+          if (!writeResp.ok) {
+            const pErr = await writeResp.json();
+            throw new Error(pErr.error?.message || `Error (${writeResp.status}) al enviar canciones a la playlist en Spotify.`);
+          }
+
+          for (let offset = 100; offset < uris.length; offset += 100) {
+            const nextBatch = uris.slice(offset, offset + 100);
+            await fetch(`https://api.spotify.com/v1/playlists/${targetPlaylistId}/tracks`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ uris: nextBatch })
+            });
+          }
+        }
+
+        statusBox.innerHTML = `✅ ¡Sincronización completa con éxito!`;
+        alert(`🚀 ¡Sincronización Exitosa con Spotify!\n\nPlaylist: '${targetPlaylistName}'\nCanciones sincronizadas en orden armónico: ${foundCount} de ${currentPlaylist.length}.\n\nEnlace: ${targetPlaylistUrl}`);
+        window.open(targetPlaylistUrl, '_blank');
+        closeSpotifyTokenGuide();
+
+      } catch (err) {
+        statusBox.style.display = 'none';
+        alert(`❌ Error al conectar con Spotify API: ${err.message}`);
+      }
+    };
+
+    function checkSpotifyHashToken() {
+      if (window.location.hash) {
+        const params = new URLSearchParams(window.location.hash.substring(1));
+        const token = params.get('access_token');
+        if (token) {
+          localStorage.setItem('spotify_access_token', token);
+          window.history.replaceState(null, null, window.location.pathname);
+          setTimeout(() => {
+            executeSpotifyPush(token);
+          }, 500);
+        }
+      }
+    }
+
+    window.syncToAppleMusic = function() {
+      const lines = currentPlaylist.map(s => `${s.title} - ${s.artist}`).join('\n');
+      navigator.clipboard.writeText(lines);
+      alert("🍎 ¡Lista copiada al portapapeles!\n\nSerás redirigido a TuneMyMusic (Gratis). Elige 'Free Text' como origen, pega el texto y selecciona Apple Music como destino.");
+      window.open('https://www.tunemymusic.com/', '_blank');
+    };
+
+    window.insertTrack = function(jsonStr, slotIndex) {
+      const track = JSON.parse(decodeURIComponent(jsonStr));
+      track.isNew = true;
+      currentPlaylist.splice(slotIndex - 1, 0, track);
+
+      const autoSort = document.getElementById('autoSortToggle')?.checked;
+      if (autoSort) {
+        reorderPlaylistHarmonically(true);
+      } else {
+        updatePlaylistTable();
+        refreshCurrentRecommendationsView();
+      }
+    };
+
+    document.getElementById('btnSmartWaveRecommend').addEventListener('click', () => generateSmartWaveRecommendations(true));
+
+    document.getElementById('btnImportPlaylist').addEventListener('click', () => {
+      const raw = document.getElementById('importTextarea').value.trim();
+      if (!raw) {
+        alert("Por favor pega primero la lista de canciones en el campo de texto.");
+        return;
+      }
+
+      const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      const newPlaylist = [];
+
+      lines.forEach((line, idx) => {
+        let title = line, artist = "Desconocido";
+        if (line.includes('-')) {
+          const parts = line.split('-');
+          title = parts[0].trim();
+          artist = parts[1].trim();
+        } else if (line.includes('—')) {
+          const parts = line.split('—');
+          title = parts[0].trim();
+          artist = parts[1].trim();
+        }
+        
+        const existing = INITIAL_PLAYLIST.find(s => normalizeSongTitle(s.title) === normalizeSongTitle(title));
+        newPlaylist.push({
+          pos: idx + 1,
+          title: existing ? existing.title : title,
+          artist: existing ? existing.artist : artist,
+          bpm: existing ? existing.bpm : 128,
+          key: existing ? existing.key : "Desconocido",
+          camelot: existing ? existing.camelot : "8A"
+        });
+      });
+
+      if (confirm(`¿Cargar esta nueva playlist de ${newPlaylist.length} canciones? Reemplazará la lista activa actual.`)) {
+        currentPlaylist = newPlaylist;
+        updatePlaylistTable();
+        document.getElementById('importTextarea').value = '';
+        refreshCurrentRecommendationsView();
+        alert(`✅ Playlist importada con éxito (${newPlaylist.length} canciones). Cambios guardados automáticamente!`);
+      }
+    });
+
+    document.getElementById('btnAnalyze').addEventListener('click', () => {
+      const q = document.getElementById('albumInput').value.trim();
+      if (q) analyzeAlbumQuery(q);
+    });
+
+    document.getElementById('btnResetPlaylist').addEventListener('click', () => {
+      if (confirm("¿Restablecer la playlist a las 38 canciones originales?")) {
+        currentPlaylist = JSON.parse(JSON.stringify(INITIAL_PLAYLIST));
+        updatePlaylistTable();
+        refreshCurrentRecommendationsView();
+      }
+    });
+
+    document.getElementById('btnCopyTuneMyMusic').addEventListener('click', () => {
+      const lines = currentPlaylist.map(s => `${s.title} - ${s.artist}`).join('\n');
+      navigator.clipboard.writeText(lines);
+      alert("📋 ¡Lista copiada al portapapeles en formato listo para TuneMyMusic!");
+    });
+
+    document.getElementById('btnExportCSV').addEventListener('click', () => {
+      let csv = "Posicion,Titulo,Artista,BPM,Camelot\n";
+      currentPlaylist.forEach((s, i) => {
+        csv += `${i + 1},"${s.title}","${s.artist}",${s.bpm},${s.camelot}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "playlist_sube_baja_edm.csv";
+      a.click();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      checkSpotifyAuthCode();
+      loadPlaylistFromLocalStorage();
+      initChart();
+      updatePlaylistTable();
+      generateSmartWaveRecommendations();
+    });
+  </script>
+</body>
+</html>
