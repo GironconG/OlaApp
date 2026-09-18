@@ -9,7 +9,7 @@ Este documento detalla los pasos, configuraciones, comandos y cuentas necesarias
 | Servicio | Detalle de Cuenta / Configuración |
 | :--- | :--- |
 | **Identidad Git (Committer)** | **Nombre**: `Juan Giron Salazar`<br>**Email**: `juangironsalazar@gmail.com` |
-| **GitHub Repository** | `https://github.com/GironconG/OlaApp.git`<br>**Usuario**: `GironconG`<br>**Rama Principal**: `master`<br>*(Nota: Si es privado, requiere iniciar sesión en GitHub para ver la URL en el navegador)* |
+| **GitHub Repository** | `https://github.com/GironconG/OlaApp.git`<br>**Usuario**: `GironconG`<br>**Rama Principal**: `main`<br>*(Nota: Si es privado, requiere iniciar sesión en GitHub para ver la URL en el navegador)* |
 | **Vercel Production** | **Proyecto**: `edm_automix_app`<br>**Equipo / Cuenta**: `juangironsalazar-5244s-projects`<br>**URL Producción**: [https://edmautomixapp.vercel.app](https://edmautomixapp.vercel.app) |
 | **Herramientas Instaladas** | Git CLI, Node.js (v18+ / v24), Vercel CLI |
 
@@ -37,7 +37,7 @@ git commit -m "Actualizacion de metadatos de busqueda y reordenamiento armonico"
 Envía los cambios a la rama principal de GitHub:
 
 ```bash
-git push origin master
+git push origin main
 ```
 
 > **Nota sobre Autenticación GitHub**:
@@ -84,7 +84,7 @@ git add .
 git commit -m "Nuevas mejoras de mezcla y metadatos"
 
 # 3. Subir a GitHub
-git push origin master
+git push origin main
 
 # 4. Vincular y Desplegar a Vercel
 npx vercel link --yes --project edm_automix_app
