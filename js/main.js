@@ -24,7 +24,9 @@ async function generateSmartWaveRecommendations(forceNewBatch = false) {
     const url = `/api/search?q=${encodeURIComponent(currentQuery)}`;
     const resp = await fetch(url);
     const data = await resp.json();
-    const liveResults = data.results || [];
+    // Solo se recomiendan resultados con BPM/tonalidad reales: uno sin dato (verified:false,
+    // bpm null) no se puede colocar en la curva y se mostraría como "null BPM".
+    const liveResults = (data.results || []).filter(r => r.verified && typeof r.bpm === 'number' && r.camelot);
 
     const availableCandidates = [...liveResults, ...EDM_CANDIDATES_POOL].filter(cand => {
       return !checkIsDuplicate(cand.title).isDuplicate;
@@ -88,6 +90,7 @@ async function generateSmartWaveRecommendations(forceNewBatch = false) {
               <span class="tag tag-genre-match">🎯 Género del Set</span>
               <span class="tag tag-bpm">${cand.bpm} BPM</span>
               <span class="tag tag-camelot">Camelot ${cand.camelot}</span>
+              <span class="tag tag-real-data">${getDataSourceLabel(trackObj.source) || '✅ Verificado'}</span>
               <span class="tag tag-ai-reason">💡 ${aiReason}</span>
               ${dupCheck.isDuplicate ? `<span class="tag tag-dup">⚠️ Ya en Playlist (#${dupCheck.pos})</span>` : ''}
             </div>
