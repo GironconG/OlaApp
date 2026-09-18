@@ -27,9 +27,16 @@ function loadPlaylistFromLocalStorage() {
                 ...track,
                 bpm: known.bpm,
                 camelot: known.camelot,
-                key: known.key || track.key
+                key: known.key || track.key,
+                source: 'known_db'
               };
             }
+          }
+          // Listas guardadas antes de registrar el origen: solo se marcan como 'manual' si
+          // coinciden exactamente con un valor escrito a mano; si no, quedan sin origen y la
+          // tabla lo muestra como "origen no registrado" en vez de asumir uno.
+          if (!track.source && isCuratedEntry(track)) {
+            return { ...track, source: 'manual' };
           }
           return track;
         });
@@ -37,7 +44,14 @@ function loadPlaylistFromLocalStorage() {
       }
     } catch(e){}
   }
-  currentPlaylist = JSON.parse(JSON.stringify(INITIAL_PLAYLIST));
+  currentPlaylist = JSON.parse(JSON.stringify(INITIAL_PLAYLIST)).map(t => ({ ...t, source: 'manual' }));
+}
+
+function isCuratedEntry(track) {
+  return [...INITIAL_PLAYLIST, ...EDM_CANDIDATES_POOL].some(c =>
+    c.title === track.title && c.artist === track.artist &&
+    c.bpm === track.bpm && c.camelot === track.camelot
+  );
 }
 
 function getDominantPlaylistGenre() {

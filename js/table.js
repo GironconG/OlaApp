@@ -32,6 +32,16 @@ function updatePlaylistTable() {
       }
     }
 
+    // Origen del BPM/tonalidad. Sin dato no hay origen que mostrar (ya sale el aviso amarillo);
+    // con dato pero sin `source` se dice explícitamente, no se asume uno.
+    let sourceTag = '';
+    if (hasData) {
+      const sourceLabel = getDataSourceLabel(s.source);
+      sourceTag = sourceLabel
+        ? ` <span class="tag tag-real-data" style="font-size:9px; padding:1px 5px; margin-left:4px;" title="Origen del BPM/tonalidad">${sourceLabel}</span>`
+        : ` <span class="tag" style="font-size:9px; padding:1px 5px; margin-left:4px; color:#94a3b8;" title="Esta canción se guardó antes de registrar de dónde salió su BPM/tonalidad">❔ Origen no registrado</span>`;
+    }
+
     tr.innerHTML = `
       <td><span class="trans-indicator ${transClass}" title="${transTooltip}"></span><b>${idx + 1}</b></td>
       <td>
@@ -40,7 +50,7 @@ function updatePlaylistTable() {
           ${s.notFoundOnSpotify ? '<span class="tag tag-dup" style="background:rgba(255,0,85,0.2); color:#ff0055; border-color:rgba(255,0,85,0.4); font-size:10px; margin-left:6px;">⚠️ No encontrada en Spotify</span>' : ''}
           ${!hasData ? '<span class="tag tag-dup" style="background:rgba(255,185,0,0.15); color:#ffb900; border-color:rgba(255,185,0,0.4); font-size:10px; margin-left:6px;">⚠️ BPM/tonalidad sin verificar</span>' : ''}
         </div>
-        <div style="font-size:11px; color:#94a3b8;">${s.artist} ${s.genre ? `• <span class="tag tag-genre" style="font-size:9px; padding:1px 5px;">🎵 ${s.genre}</span>` : ''}</div>
+        <div style="font-size:11px; color:#94a3b8;">${s.artist} ${s.genre ? `• <span class="tag tag-genre" style="font-size:9px; padding:1px 5px;">🎵 ${s.genre}</span>` : ''}${sourceTag}</div>
       </td>
       <td><b>${hasData ? s.bpm : '—'}</b></td>
       <td><span class="tag tag-camelot">${s.camelot || '—'}</span></td>

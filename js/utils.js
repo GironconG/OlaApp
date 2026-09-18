@@ -1,4 +1,20 @@
 // utils.js - Funciones auxiliares y de cálculo armónico
+
+// Origen del BPM/tonalidad de una canción (campo `source`). Un origen
+// desconocido o ausente devuelve null: quien llama decide cómo mostrarlo,
+// nunca se asume uno.
+const DATA_SOURCE_LABELS = {
+  manual: '✍️ Verificado a mano',
+  known_db: '📋 Base conocida',
+  reccobeats: '🎵 ReccoBeats',
+  beatport: '🎧 Beatport',
+  spotify: '✅ Spotify audio-features'
+};
+
+function getDataSourceLabel(source) {
+  return DATA_SOURCE_LABELS[source] || null;
+}
+
 function normalizeSongTitle(str) {
   if (!str) return '';
   return str.toLowerCase()
