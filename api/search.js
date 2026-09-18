@@ -27,6 +27,27 @@ const KEY_TO_CAMELOT = {
   "D Minor": "7A", "D min": "7A", "D-minor": "7A",
 };
 
+// Tonalidad escrita -> Camelot. Primero el mapa exacto; si el nombre no está ahí (por ejemplo una
+// enarmonía como "E# Minor", "B# Minor", "Cb Major" o "Fb Major") se calcula desde la nota, el
+// accidente y el modo. Mantener igual que camelotFromKeyName() de js/utils.js.
+// Devuelve null si no reconoce la tonalidad: nunca se rellena con un valor por defecto.
+const CAMELOT_MAJOR_BY_PITCH = ["8B", "3B", "10B", "5B", "12B", "7B", "2B", "9B", "4B", "11B", "6B", "1B"];
+const CAMELOT_MINOR_BY_PITCH = ["5A", "12A", "7A", "2A", "9A", "4A", "11A", "6A", "1A", "8A", "3A", "10A"];
+
+function camelotFromKeyName(keyName) {
+  if (!keyName || typeof keyName !== 'string') return null;
+  if (KEY_TO_CAMELOT[keyName]) return KEY_TO_CAMELOT[keyName];
+
+  const m = keyName.trim().match(/^(do|re|mi|fa|sol|la|si|[a-g])\s*(##|bb|x|#|♯|b|♭)?\s*(mayor|menor|major|minor|maj|min|m)$/i);
+  if (!m) return null;
+  const base = { do: 0, c: 0, re: 2, d: 2, mi: 4, e: 4, fa: 5, f: 5, sol: 7, g: 7, la: 9, a: 9, si: 11, b: 11 };
+  const shift = { '#': 1, '♯': 1, 'b': -1, '♭': -1, '##': 2, 'x': 2, 'bb': -2 };
+  const acc = m[2] ? shift[m[2].toLowerCase()] : 0;
+  const pitchClass = (((base[m[1].toLowerCase()] + acc) % 12) + 12) % 12;
+  const isMajor = /^(mayor|major|maj)$/i.test(m[3]);
+  return (isMajor ? CAMELOT_MAJOR_BY_PITCH : CAMELOT_MINOR_BY_PITCH)[pitchClass];
+}
+
 // Database of known popular tracks (Bad Bunny, Reggaeton, Pop & Iconic EDM Hits with exact Spotify metadata)
 const KNOWN_TRACKS_DB = {
   // Iconic EDM / Dance / Pop (Exact Spotify Data)
@@ -136,14 +157,17 @@ async function searchBeatport(query) {
             const trackList = state.tracks.data || [];
             if (trackList.length > 0) {
               const t = trackList[0];
-              const bpm = t.bpm;
-              const keyName = t.key_name || (typeof t.key === 'object' ? t.key.name : null);
-              const camelot = KEY_TO_CAMELOT[keyName] || "8A";
+              const bpm = Number(t.bpm);
+              const keyName = t.key_name || (typeof t.key === 'object' && t.key ? t.key.name : null);
+              const camelot = camelotFromKeyName(keyName);
+              // Sin BPM real o sin una tonalidad que se pueda interpretar no hay dato verificable:
+              // se devuelve null (queda verified:false) en vez de rellenar con un valor por defecto.
+              if (!(bpm > 0) || !camelot) return null;
               const mix = t.mix_name || '';
               const lengthSec = Math.round((t.length || 0) / 1000);
               const isExtended = mix.toLowerCase().includes('extended') || mix.toLowerCase().includes('club') || lengthSec >= 260;
               const genre = t.genre ? (typeof t.genre === 'object' ? t.genre.name : t.genre) : (t.genre_name || "EDM / Dance");
-              return { bpm, key: keyName || "La menor", camelot, mix, lengthSec, isExtended, genre };
+              return { bpm, key: keyName, camelot, mix, lengthSec, isExtended, genre };
             }
           }
         }
