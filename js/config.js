@@ -57,7 +57,7 @@ const EDM_CANDIDATES_POOL = [
   { title: "In the Name of Love", artist: "Martin Garrix & Bebe Rexha", bpm: 134, camelot: "3B", isExtended: true, phase: "Clímax Final 132+ BPM" },
   { title: "Tremor", artist: "Dimitri Vegas & Like Mike, Martin Garrix", bpm: 128, camelot: "4A", isExtended: true, phase: "Pico Big Room" },
   { title: "Disarm You (feat. Ilsey)", artist: "Kaskade", bpm: 124, camelot: "8A", isExtended: true, phase: "Valle / Descenso" },
-  { title: "Spaceman", artist: "Hardwell", bpm: 128, camelot: "6A", isExtended: true, phase: "Pico Big Room 128 BPM" },
+  { title: "Spaceman", artist: "Hardwell", bpm: 128, camelot: "2B", isExtended: true, phase: "Pico Big Room 128 BPM" },
   { title: "Blah Blah Blah", artist: "Armin van Buuren", bpm: 138, camelot: "4A", isExtended: true, phase: "Clímax Ultra Fast" },
   { title: "On My Mind", artist: "Don Diablo", bpm: 126, camelot: "10A", isExtended: true, phase: "Future House Ascenso" },
   { title: "Losing It", artist: "Fisher", bpm: 125, camelot: "4A", isExtended: true, phase: "Tech House Groove" },
@@ -79,5 +79,5 @@ const EDM_CANDIDATES_POOL = [
   { title: "Mammoth", artist: "Dimitri Vegas, Like Mike & Moguai", bpm: 128, camelot: "6A", isExtended: true, phase: "Big Room Classic" },
   { title: "Sun & Moon (feat. Richard Bedford)", artist: "Above & Beyond", bpm: 128, camelot: "9A", isExtended: true, phase: "Trance Progressive" },
   { title: "Pyramids (feat. Luciana)", artist: "DVBBS & Dropgun", bpm: 128, camelot: "4A", isExtended: true, phase: "Vocal Drop Peak" },
-  { title: "Runaway (U & I)", artist: "Galantis", bpm: 126, camelot: "10B", isExtended: true, phase: "Vocal Dance Peak" }
+  { title: "Runaway (U & I)", artist: "Galantis", bpm: 126, camelot: "3B", isExtended: true, phase: "Vocal Dance Peak" }
 ];
